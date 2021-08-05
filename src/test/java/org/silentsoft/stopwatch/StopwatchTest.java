@@ -18,7 +18,6 @@ public class StopwatchTest {
 
             Assertions.assertEquals(1, stopwatch.watchItems.size());
             Assertions.assertNotNull(watchItem);
-            Assertions.assertNotNull(watchItem.getStartEpochMilli());
             Assertions.assertNull(watchItem.getEndEpochMilli());
             Assertions.assertEquals("test-1", watchItem.getName());
 
@@ -38,7 +37,6 @@ public class StopwatchTest {
 
             Assertions.assertEquals(2, stopwatch.watchItems.size());
             Assertions.assertNotNull(watchItem);
-            Assertions.assertNotNull(watchItem.getStartEpochMilli());
             Assertions.assertNull(watchItem.getEndEpochMilli());
             Assertions.assertEquals("test-2", watchItem.getName());
 
