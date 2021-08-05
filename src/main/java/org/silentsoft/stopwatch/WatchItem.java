@@ -4,19 +4,26 @@ public class WatchItem {
 
     private String name;
 
-    private Long startEpochMilli, endEpochMilli;
+    private long startEpochMilli;
 
-    private WatchItem() {
-
-    }
+    private Long endEpochMilli;
 
     public WatchItem(String name) {
         this(name, System.currentTimeMillis());
     }
 
     public WatchItem(String name, long startEpochMilli) {
-        this.name = name;
-        this.startEpochMilli = startEpochMilli;
+        this(name, startEpochMilli, null);
+    }
+
+    public WatchItem(String name, long startEpochMilli, long endEpochMilli) {
+        this(name, startEpochMilli, Long.valueOf(endEpochMilli));
+    }
+
+    public WatchItem(String name, long startEpochMilli, Long endEpochMilli) {
+        setName(name);
+        setStartEpochMilli(startEpochMilli);
+        setEndEpochMilli(endEpochMilli);
     }
 
     public String getName() {
@@ -27,11 +34,11 @@ public class WatchItem {
         this.name = name;
     }
 
-    public Long getStartEpochMilli() {
+    public long getStartEpochMilli() {
         return startEpochMilli;
     }
 
-    public void setStartEpochMilli(Long startEpochMilli) {
+    public void setStartEpochMilli(long startEpochMilli) {
         this.startEpochMilli = startEpochMilli;
     }
 

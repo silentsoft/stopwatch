@@ -12,11 +12,15 @@
 ```java
 Stopwatch stopwatch = new Stopwatch();
 
-stopwatch.start("first phase");
+stopwatch.start("initialization");
 // ...
 stopwatch.stop();
 
-stopwatch.start("second phase");
+stopwatch.start("processing");
+// ...
+stopwatch.stop();
+
+stopwatch.start("rendering");
 // ...
 stopwatch.stop();
 
@@ -25,10 +29,13 @@ stopwatch.print();
 
 ## Result
 ```
-|         name | elapsed(ms) | elapsed(s) |
-|--------------|-------------|------------|
-|  first phase |     1,234ms |     1.234s |
-| second phase |       830ms |     0.830s |
+|           name |     % |      ms |      s |
+|----------------|-------|---------|--------|
+| initialization | 59.5% | 1,234ms | 1.234s |
+|     processing | 40.0% |   830ms | 0.830s |
+|      rendering |  0.5% |    10ms | 0.010s |
+|                |       |         |        |
+|          total |  100% | 2,074ms | 2.074s |
 ```
 
 ## Maven Central
@@ -36,7 +43,7 @@ stopwatch.print();
 <dependency>
     <groupId>org.silentsoft</groupId>
     <artifactId>stopwatch</artifactId>
-    <version>1.0.0</version>
+    <version>2.0.0</version>
 </dependency>
 ```
 

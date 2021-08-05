@@ -4,6 +4,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.LinkedList;
 import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 
 public class Stopwatch {
 
@@ -12,12 +13,16 @@ public class Stopwatch {
     protected LinkedList<WatchItem> watchItems = new LinkedList<>();
 
     public void start(String name) throws NullPointerException {
-        if (name == null) {
+        add(new WatchItem(name));
+    }
+
+    public void add(WatchItem watchItem) throws NullPointerException {
+        if (watchItem.getName() == null) {
             throw new NullPointerException("Name cannot be null.");
         }
 
         synchronized (watchItems) {
-            watchItems.add(new WatchItem(name));
+            watchItems.add(watchItem);
         }
     }
 
@@ -39,6 +44,22 @@ public class Stopwatch {
         }
     }
 
+    public long getTotalElapsedMilliseconds() {
+        synchronized (watchItems) {
+            return watchItems.stream().flatMapToLong(watchItem -> {
+                if (watchItem.getEndEpochMilli() == null) {
+                    return LongStream.of(0);
+                }
+
+                return LongStream.of(watchItem.getEndEpochMilli() - watchItem.getStartEpochMilli());
+            }).sum();
+        }
+    }
+
+    public double getTotalElapsedSeconds() {
+        return getTotalElapsedMilliseconds() / 1000.0;
+    }
+
     public void print() {
         print(System.out);
     }
@@ -57,36 +78,50 @@ public class Stopwatch {
                 int maxLengthOfName = watchItems.stream().flatMapToInt(watchItem -> IntStream.of(watchItem.getName().length())).max().getAsInt();
                 maxLengthOfName = Math.max(maxLengthOfName, "name".length());
 
+                int maxLengthOfPercentage = "    %".length();
+
+                long totalElapsedMilliseconds = getTotalElapsedMilliseconds();
                 int maxLengthOfElapsedMilliseconds = watchItems.stream().flatMapToInt(watchItem -> IntStream.of(watchItem.getEndEpochMilli() == null ? 0 : NumberFormatter.milliseconds(watchItem.getEndEpochMilli() - watchItem.getStartEpochMilli()).length())).max().getAsInt();
-                maxLengthOfElapsedMilliseconds = Math.max(maxLengthOfElapsedMilliseconds, "elapsed(ms)".length());
+                maxLengthOfElapsedMilliseconds = Math.max(maxLengthOfElapsedMilliseconds, NumberFormatter.milliseconds(totalElapsedMilliseconds).length());
 
+                double totalElapsedSeconds = getTotalElapsedSeconds();
                 int maxLengthOfElapsedSeconds = watchItems.stream().flatMapToInt(watchItem -> IntStream.of(watchItem.getEndEpochMilli() == null ? 0 : NumberFormatter.seconds((watchItem.getEndEpochMilli() - watchItem.getStartEpochMilli()) / 1000.0).length())).max().getAsInt();
-                maxLengthOfElapsedSeconds = Math.max(maxLengthOfElapsedSeconds, "elapsed(s)".length());
+                maxLengthOfElapsedSeconds = Math.max(maxLengthOfElapsedSeconds, NumberFormatter.seconds(totalElapsedSeconds).length());
 
-                String title = String.format("| %s | %s | %s |\n", fillWithWhitespace("name", maxLengthOfName), fillWithWhitespace("elapsed(ms)", maxLengthOfElapsedMilliseconds), fillWithWhitespace("elapsed(s)", maxLengthOfElapsedSeconds));
+                String title = String.format("| %s | %s | %s | %s |\n", fillWithWhitespace("name", maxLengthOfName), "    %", fillWithWhitespace("ms", maxLengthOfElapsedMilliseconds), fillWithWhitespace("s", maxLengthOfElapsedSeconds));
                 writer.write(title);
 
-                String separator = String.format("%s\n", createSeparator(maxLengthOfName, maxLengthOfElapsedMilliseconds, maxLengthOfElapsedSeconds));
+                String separator = String.format("%s\n", createSeparator(maxLengthOfName, maxLengthOfPercentage, maxLengthOfElapsedMilliseconds, maxLengthOfElapsedSeconds));
                 writer.write(separator);
 
                 while (watchItems.isEmpty() == false) {
                     WatchItem watchItem = watchItems.poll();
                     String name = watchItem.getName();
-                    String elapsedMilli;
-                    String elapsedSecond;
+                    String percentage;
+                    String elapsedMilliseconds;
+                    String elapsedSeconds;
                     if (watchItem.getEndEpochMilli() != null) {
-                        long elapsed = watchItem.getEndEpochMilli() - watchItem.getStartEpochMilli();
-                        elapsedMilli = NumberFormatter.milliseconds(elapsed);
-                        elapsedSecond = NumberFormatter.seconds(elapsed / 1000.0);
+                        long elapsedMilli = watchItem.getEndEpochMilli() - watchItem.getStartEpochMilli();
+                        percentage = NumberFormatter.percentage((elapsedMilli / (totalElapsedMilliseconds * 1.0)) * 100);
+                        elapsedMilliseconds = NumberFormatter.milliseconds(elapsedMilli);
+                        elapsedSeconds = NumberFormatter.seconds(elapsedMilli / 1000.0);
                     } else {
-                        elapsedMilli = NOT_AVAILABLE;
-                        elapsedSecond = NOT_AVAILABLE;
+                        percentage = "";
+                        elapsedMilliseconds = NOT_AVAILABLE;
+                        elapsedSeconds = NOT_AVAILABLE;
                     }
-                    writer.write(String.format("| %s | %s | %s |\n", fillWithWhitespace(name, maxLengthOfName), fillWithWhitespace(elapsedMilli, maxLengthOfElapsedMilliseconds), fillWithWhitespace(elapsedSecond, maxLengthOfElapsedSeconds)));
+                    writer.write(String.format("| %s | %s | %s | %s |\n", fillWithWhitespace(name, maxLengthOfName), fillWithWhitespace(percentage, maxLengthOfPercentage), fillWithWhitespace(elapsedMilliseconds, maxLengthOfElapsedMilliseconds), fillWithWhitespace(elapsedSeconds, maxLengthOfElapsedSeconds)));
                 }
+
+                String emptyRow = String.format("%s\n", createEmptyRow(maxLengthOfName, maxLengthOfPercentage, maxLengthOfElapsedMilliseconds, maxLengthOfElapsedSeconds));
+                writer.write(emptyRow);
+
+                String total = String.format("| %s | %s | %s | %s |\n", fillWithWhitespace("total", maxLengthOfName), fillWithWhitespace("100%", maxLengthOfPercentage), fillWithWhitespace(NumberFormatter.milliseconds(totalElapsedMilliseconds), maxLengthOfElapsedMilliseconds), fillWithWhitespace(NumberFormatter.seconds(totalElapsedSeconds), maxLengthOfElapsedSeconds));
+                writer.write(total);
+
                 writer.flush();
             } catch (Exception e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
         }
     }
@@ -113,6 +148,10 @@ public class Stopwatch {
         separator = separator.concat("-|");
 
         return separator;
+    }
+
+    protected String createEmptyRow(int... lengthOfColumns) {
+        return createSeparator(lengthOfColumns).replaceAll("-", " ");
     }
 
 }

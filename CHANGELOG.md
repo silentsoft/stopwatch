@@ -1,3 +1,13 @@
+# 2.0.0 (5 Aug 2021)
+
+## Enhancements
+- Add percentage information to the output.
+- Add `NumberFormatter.percentage()` method to format the given value.
+- Add more constructors to `WatchItem`.
+- Change some column names in the output to be shorter.
+- Support `getTotalElapsedMilliseconds()` and `getTotalElapsedSeconds()` methods in `Stopwatch`.
+- Support `add()` method in `Stopwatch` to customize the output.
+
 # 1.0.0 (3 Aug 2021)
 
 ## Usage
