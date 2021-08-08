@@ -63,7 +63,17 @@ public class StopwatchTest {
             stopwatch.watchItems.add(watchItem);
         }
         {
-            stopwatch.start("test-4");
+            WatchItem watchItem = new WatchItem("test-4", 0, 567);
+            watchItem.setTotalPausedMilli(567);
+            stopwatch.watchItems.add(watchItem);
+        }
+        {
+            WatchItem watchItem = new WatchItem("test-5", 0, 890);
+            watchItem.setTotalPausedMilli(890);
+            stopwatch.watchItems.add(watchItem);
+        }
+        {
+            stopwatch.start("test-6");
             /* stopwatch.stop(); */
         }
 
@@ -73,48 +83,88 @@ public class StopwatchTest {
 
     @Test
     public void printTest() {
-        Stopwatch stopwatch = new Stopwatch();
         {
-            stopwatch.start("test-1");
-            /* stopwatch.stop(); */
-        }
-        {
-            WatchItem watchItem = new WatchItem("test-2", 0, 1);
-            stopwatch.watchItems.add(watchItem);
-        }
-        {
-            WatchItem watchItem = new WatchItem("test-3", 0, 10);
-            stopwatch.watchItems.add(watchItem);
-        }
-        {
-            WatchItem watchItem = new WatchItem("test-4", 0, 100);
-            stopwatch.watchItems.add(watchItem);
-        }
-        {
-            WatchItem watchItem = new WatchItem("test-5", 0, 1000);
-            stopwatch.watchItems.add(watchItem);
-        }
-        {
-            stopwatch.start("test-6");
-            /* stopwatch.stop(); */
-        }
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.start("test");
 
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        stopwatch.print(outputStream);
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            stopwatch.print(outputStream);
 
-        StringBuilder builder = new StringBuilder();
-        builder.append("|   name |     % |      ms |      s |\n");
-        builder.append("|--------|-------|---------|--------|\n");
-        builder.append("| test-1 |       |     N/A |    N/A |\n");
-        builder.append("| test-2 |  0.1% |     1ms | 0.001s |\n");
-        builder.append("| test-3 |  0.9% |    10ms | 0.010s |\n");
-        builder.append("| test-4 |  9.0% |   100ms | 0.100s |\n");
-        builder.append("| test-5 | 90.0% | 1,000ms | 1.000s |\n");
-        builder.append("| test-6 |       |     N/A |    N/A |\n");
-        builder.append("|        |       |         |        |\n");
-        builder.append("|  total |  100% | 1,111ms | 1.111s |\n");
+            StringBuilder builder = new StringBuilder();
+            builder.append("|  name |    % |  ms |      s |\n");
+            builder.append("|-------|------|-----|--------|\n");
+            builder.append("|  test |      | N/A |    N/A |\n");
+            builder.append("|       |      |     |        |\n");
+            builder.append("| total | 100% | 0ms | 0.000s |\n");
 
-        Assertions.assertEquals(builder.toString(), new String(outputStream.toByteArray()));
+            Assertions.assertEquals(builder.toString(), new String(outputStream.toByteArray()));
+        }
+        {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.add(new WatchItem("test", 0, 1000));
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            stopwatch.print(outputStream);
+
+            StringBuilder builder = new StringBuilder();
+            builder.append("|  name |    % |      ms |      s |\n");
+            builder.append("|-------|------|---------|--------|\n");
+            builder.append("|  test | 100% | 1,000ms | 1.000s |\n");
+            builder.append("|       |      |         |        |\n");
+            builder.append("| total | 100% | 1,000ms | 1.000s |\n");
+
+            Assertions.assertEquals(builder.toString(), new String(outputStream.toByteArray()));
+        }
+        {
+            Stopwatch stopwatch = new Stopwatch();
+            {
+                stopwatch.start("test-1");
+                /* stopwatch.stop(); */
+            }
+            {
+                WatchItem watchItem = new WatchItem("test-2", 0, 1);
+                stopwatch.watchItems.add(watchItem);
+            }
+            {
+                WatchItem watchItem = new WatchItem("test-3", 0, 10);
+                stopwatch.watchItems.add(watchItem);
+            }
+            {
+                WatchItem watchItem = new WatchItem("test-4", 0, 100);
+                stopwatch.watchItems.add(watchItem);
+            }
+            {
+                WatchItem watchItem = new WatchItem("test-5", 0, 1000);
+                stopwatch.watchItems.add(watchItem);
+            }
+            {
+                WatchItem watchItem = new WatchItem("test-6", 0, 1000);
+                watchItem.setTotalPausedMilli(1000);
+                stopwatch.watchItems.add(watchItem);
+            }
+            {
+                stopwatch.start("test-7");
+                /* stopwatch.stop(); */
+            }
+
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            stopwatch.print(outputStream);
+
+            StringBuilder builder = new StringBuilder();
+            builder.append("|   name |     % |      ms |      s |\n");
+            builder.append("|--------|-------|---------|--------|\n");
+            builder.append("| test-1 |       |     N/A |    N/A |\n");
+            builder.append("| test-2 |  0.1% |     1ms | 0.001s |\n");
+            builder.append("| test-3 |  0.9% |    10ms | 0.010s |\n");
+            builder.append("| test-4 |  9.0% |   100ms | 0.100s |\n");
+            builder.append("| test-5 | 90.0% | 1,000ms | 1.000s |\n");
+            builder.append("| test-6 |  0.0% |     0ms | 0.000s |\n");
+            builder.append("| test-7 |       |     N/A |    N/A |\n");
+            builder.append("|        |       |         |        |\n");
+            builder.append("|  total |  100% | 1,111ms | 1.111s |\n");
+
+            Assertions.assertEquals(builder.toString(), new String(outputStream.toByteArray()));
+        }
     }
 
     @Test
@@ -138,8 +188,25 @@ public class StopwatchTest {
         });
         Assertions.assertDoesNotThrow(() -> {
             new Stopwatch().stop();
-            new Stopwatch().stop(null);
+            new Stopwatch().stop("");
+            new Stopwatch().pause();
+            new Stopwatch().pause("");
+            new Stopwatch().resume();
+            new Stopwatch().resume("");
             new Stopwatch().print();
+            {
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.start("test");
+                stopwatch.pause("test");
+                stopwatch.stop("test");
+            }
+            {
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.start("test");
+                stopwatch.pause("test");
+                stopwatch.resume("test");
+                stopwatch.stop("test");
+            }
         });
     }
 

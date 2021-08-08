@@ -26,6 +26,44 @@ public class Stopwatch {
         }
     }
 
+    public void pause() {
+        pause(null);
+    }
+
+    public void pause(String name) {
+        synchronized (watchItems) {
+            for (int i= watchItems.size()-1; i>=0; i--) {
+                WatchItem watchItem = watchItems.get(i);
+                if (name == null || watchItem.getName().equals(name)) {
+                    if (watchItem.getPauseEpochMilli() == null) {
+                        watchItem.pause();
+
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    public void resume() {
+        resume(null);
+    }
+
+    public void resume(String name) {
+        synchronized (watchItems) {
+            for (int i = watchItems.size() - 1; i >= 0; i--) {
+                WatchItem watchItem = watchItems.get(i);
+                if (name == null || watchItem.getName().equals(name)) {
+                    if (watchItem.getPauseEpochMilli() != null && watchItem.getResumeEpochMilli() == null) {
+                        watchItem.resume();
+
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
     public void stop() {
         stop(null);
     }
@@ -36,7 +74,8 @@ public class Stopwatch {
                 WatchItem watchItem = watchItems.get(i);
                 if (name == null || watchItem.getName().equals(name)) {
                     if (watchItem.getEndEpochMilli() == null) {
-                        watchItem.setEndEpochMilli(System.currentTimeMillis());
+                        watchItem.stop();
+
                         break;
                     }
                 }
@@ -45,15 +84,11 @@ public class Stopwatch {
     }
 
     public long getTotalElapsedMilliseconds() {
+        Long totalElapsedMilliseconds;
         synchronized (watchItems) {
-            return watchItems.stream().flatMapToLong(watchItem -> {
-                if (watchItem.getEndEpochMilli() == null) {
-                    return LongStream.of(0);
-                }
-
-                return LongStream.of(watchItem.getEndEpochMilli() - watchItem.getStartEpochMilli());
-            }).sum();
+            totalElapsedMilliseconds = watchItems.stream().flatMapToLong(watchItem -> LongStream.of(watchItem.getElapsedMilli() != null ? watchItem.getElapsedMilli() : 0)).sum();
         }
+        return totalElapsedMilliseconds;
     }
 
     public double getTotalElapsedSeconds() {
@@ -76,19 +111,21 @@ public class Stopwatch {
 
             try (OutputStreamWriter writer = new OutputStreamWriter(outputStream)) {
                 int maxLengthOfName = watchItems.stream().flatMapToInt(watchItem -> IntStream.of(watchItem.getName().length())).max().getAsInt();
-                maxLengthOfName = Math.max(maxLengthOfName, "name".length());
-
-                int maxLengthOfPercentage = "    %".length();
+                maxLengthOfName = Math.max(maxLengthOfName, Math.max("name".length(), "total".length()));
 
                 long totalElapsedMilliseconds = getTotalElapsedMilliseconds();
-                int maxLengthOfElapsedMilliseconds = watchItems.stream().flatMapToInt(watchItem -> IntStream.of(watchItem.getEndEpochMilli() == null ? 0 : NumberFormatter.milliseconds(watchItem.getEndEpochMilli() - watchItem.getStartEpochMilli()).length())).max().getAsInt();
-                maxLengthOfElapsedMilliseconds = Math.max(maxLengthOfElapsedMilliseconds, NumberFormatter.milliseconds(totalElapsedMilliseconds).length());
+
+                int maxLengthOfPercentage = watchItems.stream().flatMapToInt(watchItem -> IntStream.of(watchItem.getElapsedMilli() == null ? 0 : NumberFormatter.percentage((watchItem.getElapsedMilli() / (totalElapsedMilliseconds * 1.0)) * 100).length())).max().getAsInt();
+                maxLengthOfPercentage = Math.max(maxLengthOfPercentage, "100%".length());
+
+                int maxLengthOfElapsedMilliseconds = watchItems.stream().flatMapToInt(watchItem -> IntStream.of(watchItem.getElapsedMilli() == null ? 0 : NumberFormatter.milliseconds(watchItem.getElapsedMilli()).length())).max().getAsInt();
+                maxLengthOfElapsedMilliseconds = Math.max(maxLengthOfElapsedMilliseconds, Math.max(NOT_AVAILABLE.length(), NumberFormatter.milliseconds(totalElapsedMilliseconds).length()));
 
                 double totalElapsedSeconds = getTotalElapsedSeconds();
-                int maxLengthOfElapsedSeconds = watchItems.stream().flatMapToInt(watchItem -> IntStream.of(watchItem.getEndEpochMilli() == null ? 0 : NumberFormatter.seconds((watchItem.getEndEpochMilli() - watchItem.getStartEpochMilli()) / 1000.0).length())).max().getAsInt();
-                maxLengthOfElapsedSeconds = Math.max(maxLengthOfElapsedSeconds, NumberFormatter.seconds(totalElapsedSeconds).length());
+                int maxLengthOfElapsedSeconds = watchItems.stream().flatMapToInt(watchItem -> IntStream.of(watchItem.getElapsedMilli() == null ? 0 : NumberFormatter.seconds(watchItem.getElapsedMilli() / 1000.0).length())).max().getAsInt();
+                maxLengthOfElapsedSeconds = Math.max(maxLengthOfElapsedSeconds, Math.max(NOT_AVAILABLE.length(), NumberFormatter.seconds(totalElapsedSeconds).length()));
 
-                String title = String.format("| %s | %s | %s | %s |\n", fillWithWhitespace("name", maxLengthOfName), "    %", fillWithWhitespace("ms", maxLengthOfElapsedMilliseconds), fillWithWhitespace("s", maxLengthOfElapsedSeconds));
+                String title = String.format("| %s | %s | %s | %s |\n", fillWithWhitespace("name", maxLengthOfName), fillWithWhitespace("%", maxLengthOfPercentage), fillWithWhitespace("ms", maxLengthOfElapsedMilliseconds), fillWithWhitespace("s", maxLengthOfElapsedSeconds));
                 writer.write(title);
 
                 String separator = String.format("%s\n", createSeparator(maxLengthOfName, maxLengthOfPercentage, maxLengthOfElapsedMilliseconds, maxLengthOfElapsedSeconds));
@@ -97,19 +134,22 @@ public class Stopwatch {
                 while (watchItems.isEmpty() == false) {
                     WatchItem watchItem = watchItems.poll();
                     String name = watchItem.getName();
+
                     String percentage;
                     String elapsedMilliseconds;
                     String elapsedSeconds;
-                    if (watchItem.getEndEpochMilli() != null) {
-                        long elapsedMilli = watchItem.getEndEpochMilli() - watchItem.getStartEpochMilli();
-                        percentage = NumberFormatter.percentage((elapsedMilli / (totalElapsedMilliseconds * 1.0)) * 100);
-                        elapsedMilliseconds = NumberFormatter.milliseconds(elapsedMilli);
-                        elapsedSeconds = NumberFormatter.seconds(elapsedMilli / 1000.0);
-                    } else {
+
+                    Long elapsedMilli = watchItem.getElapsedMilli();
+                    if (elapsedMilli == null) {
                         percentage = "";
                         elapsedMilliseconds = NOT_AVAILABLE;
                         elapsedSeconds = NOT_AVAILABLE;
+                    } else {
+                        percentage = NumberFormatter.percentage((elapsedMilli / (totalElapsedMilliseconds * 1.0)) * 100);
+                        elapsedMilliseconds = NumberFormatter.milliseconds(elapsedMilli);
+                        elapsedSeconds = NumberFormatter.seconds(elapsedMilli / 1000.0);
                     }
+
                     writer.write(String.format("| %s | %s | %s | %s |\n", fillWithWhitespace(name, maxLengthOfName), fillWithWhitespace(percentage, maxLengthOfPercentage), fillWithWhitespace(elapsedMilliseconds, maxLengthOfElapsedMilliseconds), fillWithWhitespace(elapsedSeconds, maxLengthOfElapsedSeconds)));
                 }
 
