@@ -1,3 +1,11 @@
+# 2.1.0 (8 Aug 2021)
+
+## New Features
+- Add `pause()` and `resume()` features in `Stopwatch`.
+
+## Bug Fixes
+- Fix incorrect calculation of fraction digits in `NumberFormatter`.
+
 # 2.0.0 (5 Aug 2021)
 
 ## Enhancements
