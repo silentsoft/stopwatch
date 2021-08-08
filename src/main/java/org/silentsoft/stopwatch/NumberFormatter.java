@@ -2,7 +2,7 @@ package org.silentsoft.stopwatch;
 
 import java.text.NumberFormat;
 
-public final class NumberFormatter {
+public class NumberFormatter {
 
     private static NumberFormat percentageFormat;
     private static NumberFormat millisecondsFormat;
@@ -15,7 +15,7 @@ public final class NumberFormatter {
             percentageFormat.setMaximumFractionDigits(1);
         }
 
-        return percentageFormat.format(number).concat("%");
+        return (number == 100.0 ? "100" : percentageFormat.format(number)).concat("%");
     }
 
     public static String milliseconds(double number) {
