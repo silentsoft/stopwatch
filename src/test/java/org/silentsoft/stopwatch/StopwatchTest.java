@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class StopwatchTest {
 
@@ -45,6 +46,32 @@ public class StopwatchTest {
             Assertions.assertEquals(2, stopwatch.watchItems.size());
             Assertions.assertNotNull(watchItem.getEndEpochMilli());
         }
+    }
+
+    @Test
+    public void runnableTest() {
+        Stopwatch stopwatch = new Stopwatch();
+        AtomicBoolean launchFlag = new AtomicBoolean(false);
+        stopwatch.start("test", () -> {
+            launchFlag.set(true);
+            try {
+                Thread.sleep(1);
+
+                stopwatch.pause();
+                Thread.sleep(1);
+                stopwatch.resume();
+            } catch (InterruptedException e) {
+
+            }
+        });
+        Assertions.assertTrue(launchFlag.get());
+        Assertions.assertEquals(1, stopwatch.watchItems.size());
+        Assertions.assertNotNull(stopwatch.watchItems.get(0).getEndEpochMilli());
+        Assertions.assertNull(stopwatch.watchItems.get(0).getPauseEpochMilli());
+        Assertions.assertNull(stopwatch.watchItems.get(0).getResumeEpochMilli());
+        Assertions.assertTrue(stopwatch.watchItems.get(0).getTotalPausedMilli() > 0);
+        Assertions.assertTrue(stopwatch.getTotalElapsedSeconds() > 0);
+        Assertions.assertTrue(stopwatch.getTotalElapsedMilliseconds() > 0);
     }
 
     @Test

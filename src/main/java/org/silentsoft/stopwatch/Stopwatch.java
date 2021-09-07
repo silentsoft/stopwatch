@@ -16,6 +16,15 @@ public class Stopwatch {
         add(new WatchItem(name));
     }
 
+    public void start(String name, Runnable runnable) throws NullPointerException {
+        WatchItem watchItem = new WatchItem(name);
+        add(watchItem);
+
+        runnable.run();
+
+        watchItem.stop();
+    }
+
     public void add(WatchItem watchItem) throws NullPointerException {
         if (watchItem.getName() == null) {
             throw new NullPointerException("Name cannot be null.");
