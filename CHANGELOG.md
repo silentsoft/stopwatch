@@ -1,3 +1,8 @@
+# 2.2.0 (7 Sep 2021)
+
+## New Features
+- Add `start(String, Runnable)` feature to measure `Runnable` code snippets on the fly.
+
 # 2.1.0 (8 Aug 2021)
 
 ## New Features
