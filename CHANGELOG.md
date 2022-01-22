@@ -1,3 +1,9 @@
+# 2.2.1 (22 Jan 2022)
+
+## Enhancements
+- Add JavaDoc comments
+- Minor code cleanup
+
 # 2.2.0 (7 Sep 2021)
 
 ## New Features
