@@ -1,7 +1,7 @@
 # Stopwatch
 
-![Maven Central](https://img.shields.io/maven-central/v/org.silentsoft/stopwatch)
-[![Build Status](https://travis-ci.com/silentsoft/stopwatch.svg?branch=main)](https://travis-ci.com/silentsoft/stopwatch)
+[![Maven Central](https://img.shields.io/maven-central/v/org.silentsoft/stopwatch)](https://search.maven.org/artifact/org.silentsoft/stopwatch)
+[![Build Status](https://app.travis-ci.com/silentsoft/stopwatch.svg?branch=main)](https://app.travis-ci.com/silentsoft/stopwatch)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=silentsoft_stopwatch&metric=alert_status)](https://sonarcloud.io/dashboard?id=silentsoft_stopwatch)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=silentsoft_stopwatch&metric=coverage)](https://sonarcloud.io/dashboard?id=silentsoft_stopwatch)
 [![Hits](https://hits.sh/github.com/silentsoft/stopwatch.svg)](https://hits.sh)
