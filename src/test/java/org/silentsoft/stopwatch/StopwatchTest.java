@@ -224,15 +224,33 @@ public class StopwatchTest {
             {
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.start("test");
+                stopwatch.start("test");
+                stopwatch.stop();
+                stopwatch.stop();
+                stopwatch.stop();
+            }
+            {
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.start("test");
                 stopwatch.pause("test");
-                stopwatch.stop("test");
+                stopwatch.pause("test");
+            }
+            {
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.start("test");
+                stopwatch.pause("test-1");
             }
             {
                 Stopwatch stopwatch = new Stopwatch();
                 stopwatch.start("test");
                 stopwatch.pause("test");
                 stopwatch.resume("test");
-                stopwatch.stop("test");
+                stopwatch.resume("test");
+            }
+            {
+                Stopwatch stopwatch = new Stopwatch();
+                stopwatch.start("test");
+                stopwatch.resume("test-1");
             }
         });
     }
