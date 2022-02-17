@@ -4,7 +4,7 @@
 [![Build Status](https://app.travis-ci.com/silentsoft/stopwatch.svg?branch=main)](https://app.travis-ci.com/silentsoft/stopwatch)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=silentsoft_stopwatch&metric=alert_status)](https://sonarcloud.io/dashboard?id=silentsoft_stopwatch)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=silentsoft_stopwatch&metric=coverage)](https://sonarcloud.io/dashboard?id=silentsoft_stopwatch)
-[![Hits](https://hits.sh/github.com/silentsoft/stopwatch.svg)](https://hits.sh)
+[![Hits](https://hits.sh/github.com/silentsoft/stopwatch.svg)](https://hits.sh/github.com/silentsoft/stopwatch/)
 
 `Stopwatch` for get rid of chore in your code.
 
